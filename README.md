@@ -26,6 +26,15 @@ mediante `frontend/proxy.conf.json`.
 
 Flujo sugerido: trabajar en `develop` y fusionar en `main` cuando la versión esté lista.
 
+Antes de cada commit se revisa que no se suban claves:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\check-secrets.ps1
+```
+
+Está prohibido versionar `.env`, llaves (`*.pem`, `*.key`, `id_rsa*`) o credenciales AWS.
+Solo se versiona `backend/.env.example` con valores de ejemplo.
+
 ## Puesta en marcha
 
 ### Backend
