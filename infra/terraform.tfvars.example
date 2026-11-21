@@ -1,0 +1,4 @@
+aws_region    = "us-east-2"
+project_name  = "aws-ug-ia"
+environment   = "dev"
+callback_urls = ["http://localhost:4200"]

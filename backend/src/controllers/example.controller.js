@@ -1,25 +1,42 @@
-// Controlador: recibe las peticiones y devuelve las respuestas usando el modelo.
+// Controlador: recibe las peticiones y responde usando el modelo (DynamoDB).
 import * as ExampleModel from '../models/example.model.js';
 
-export const list = (_req, res) => {
-  res.json(ExampleModel.findAll());
-};
+const fail = (res, error) =>
+  res.status(500).json({ message: error.message || 'Error interno' });
 
-export const getById = (req, res) => {
-  const item = ExampleModel.findById(req.params.id);
-  if (!item) return res.status(404).json({ message: 'No encontrado' });
-  res.json(item);
-};
-
-export const create = (req, res) => {
-  const { nombre, descripcion } = req.body || {};
-  if (!nombre) return res.status(400).json({ message: 'El campo nombre es obligatorio' });
-  res.status(201).json(ExampleModel.create({ nombre, descripcion }));
-};
-
-export const remove = (req, res) => {
-  if (!ExampleModel.remove(req.params.id)) {
-    return res.status(404).json({ message: 'No encontrado' });
+export const list = async (_req, res) => {
+  try {
+    res.json(await ExampleModel.findAll());
+  } catch (error) {
+    fail(res, error);
   }
-  res.status(204).send();
+};
+
+export const getById = async (req, res) => {
+  try {
+    const item = await ExampleModel.findById(req.params.id);
+    if (!item) return res.status(404).json({ message: 'No encontrado' });
+    res.json(item);
+  } catch (error) {
+    fail(res, error);
+  }
+};
+
+export const create = async (req, res) => {
+  try {
+    const { nombre, descripcion } = req.body || {};
+    if (!nombre) return res.status(400).json({ message: 'El campo nombre es obligatorio' });
+    res.status(201).json(await ExampleModel.create({ nombre, descripcion }));
+  } catch (error) {
+    fail(res, error);
+  }
+};
+
+export const remove = async (req, res) => {
+  try {
+    await ExampleModel.remove(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    fail(res, error);
+  }
 };

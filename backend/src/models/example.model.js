@@ -1,24 +1,34 @@
-// Modelo: representa los datos y la lógica de persistencia.
-// Por ahora se usa un arreglo en memoria; se puede reemplazar por una BD.
-let examples = [
-  { id: 1, nombre: 'Primer ejemplo', descripcion: 'Datos de ejemplo del backend MVC' },
-];
+// Modelo: datos persistidos en DynamoDB.
+import { randomUUID } from 'node:crypto';
+import { GetCommand, PutCommand, ScanCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+import { ddb, TABLE_NAME } from '../config/aws.js';
 
-let nextId = 2;
+export const findAll = async () => {
+  const { Items = [] } = await ddb.send(new ScanCommand({ TableName: TABLE_NAME }));
+  return Items;
+};
 
-export const findAll = () => examples;
+export const findById = async (id) => {
+  const { Item } = await ddb.send(
+    new GetCommand({ TableName: TABLE_NAME, Key: { id } }),
+  );
+  return Item ?? null;
+};
 
-export const findById = (id) => examples.find((item) => item.id === Number(id));
+export const create = async ({ nombre, descripcion }) => {
+  const item = {
+    id: `example#${randomUUID()}`,
+    type: 'example',
+    nombre,
+    descripcion,
+    createdAt: new Date().toISOString(),
+  };
 
-export const create = ({ nombre, descripcion }) => {
-  const item = { id: nextId++, nombre, descripcion };
-  examples.push(item);
+  await ddb.send(new PutCommand({ TableName: TABLE_NAME, Item: item }));
   return item;
 };
 
-export const remove = (id) => {
-  const index = examples.findIndex((item) => item.id === Number(id));
-  if (index === -1) return false;
-  examples.splice(index, 1);
+export const remove = async (id) => {
+  await ddb.send(new DeleteCommand({ TableName: TABLE_NAME, Key: { id } }));
   return true;
 };
